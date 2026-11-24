@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Карманный инженер ИЖС — калькулятор фундамента, кровли, стропил и балок</title>
+<meta name="description" content="Бесплатный калькулятор для частного дома: плитный и ленточный фундамент, кровля, стропила, деревянная балка перекрытия. Расчёт по СП с вердиктом «проходит / не проходит».">
+<meta name="theme-color" content="#1c46d6">
+<style>
+/* VOICE: уверенный инженер рядом — коротко, по делу, с вердиктом
+   IDEA: синька-чертёж + сигнальная лента стройплощадки
+   PICTURE: живая расчётная схема каждого элемента (сечение, балка с эпюрой прогиба)
+   COLOUR and TYPE: кобальт #1c46d6, жёлтая лента #ffd400, белая бумага; Onest
+   LAYOUT: шапка-полоса, вкладки, форма слева и результат со схемой справа; на телефоне в столбик */
+@font-face{font-family:"Onest";font-weight:400;font-display:swap;src:url(fonts/onest-cyrillic-400-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-weight:400;font-display:swap;src:url(fonts/onest-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+@font-face{font-family:"Onest";font-weight:500;font-display:swap;src:url(fonts/onest-cyrillic-500-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-weight:500;font-display:swap;src:url(fonts/onest-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+@font-face{font-family:"Onest";font-weight:700;font-display:swap;src:url(fonts/onest-cyrillic-700-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-weight:700;font-display:swap;src:url(fonts/onest-latin-700-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+@font-face{font-family:"Onest";font-weight:800;font-display:swap;src:url(fonts/onest-cyrillic-800-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Onest";font-weight:800;font-display:swap;src:url(fonts/onest-latin-800-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215}
+:root{color-scheme:light dark;--ff:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+ --bg:light-dark(#ffffff,#0d1220);--ink:light-dark(#141a26,#e9edf6);--mut:light-dark(#5b6576,#9aa6bc);
+ --line:light-dark(#dfe4ee,#26304a);--card:light-dark(#f4f6fb,#151c2f);--blue:#1c46d6;--blue2:light-dark(#e7edff,#1a2450);
+ --yel:#ffd400;--ok:light-dark(#11804a,#3ccf86);--okbg:light-dark(#e4f6ec,#10301f);--bad:light-dark(#c8202f,#ff6b78);--badbg:light-dark(#fde8ea,#3a1218);
+ --warn:light-dark(#a45a00,#ffb547);--warnbg:light-dark(#fff3dc,#33240a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--ff);overflow-x:clip}
+a{color:var(--blue)}
+.top{background:var(--blue);color:#fff;position:relative;overflow:hidden}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:0;height:10px;background:repeating-linear-gradient(135deg,var(--yel) 0 14px,#141a26 14px 28px)}
+.topin{max-width:1240px;margin:0 auto;padding:22px max(4vw,16px) 30px;display:flex;justify-content:space-between;gap:16px;align-items:end;flex-wrap:wrap}
+h1{font:800 clamp(28px,4.6vw,46px)/1.05 var(--ff);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.lead{margin:8px 0 0;max-width:620px;opacity:.92}
+.badge{background:rgba(255,255,255,.14);border-radius:12px;padding:10px 14px;font-size:14px;max-width:300px}
+.badge b{display:block;font-size:16px}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabsin{max-width:1240px;margin:0 auto;padding:10px max(4vw,16px);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.tabsin::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 16px;font:500 15px var(--ff);cursor:pointer;min-height:44px;text-decoration:none;display:flex;align-items:center}
+.tab[aria-current=page]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--yel);outline-offset:2px}
+main{max-width:1240px;margin:0 auto;padding:22px max(4vw,16px) 40px}
+.calc{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+.calc[hidden]{display:none}
+h2{font:800 clamp(24px,3vw,32px)/1.1 var(--ff);margin:0 0 6px;text-wrap:balance}
+.sub{color:var(--mut);margin:0 0 16px}
+fieldset{border:0;margin:0 0 14px;padding:14px;background:var(--card);border-radius:16px}
+legend{font-weight:700;padding:0;margin-bottom:8px;float:left;width:100%}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 12px;clear:both}
+.f{display:flex;flex-direction:column;gap:4px}
+.f.w{grid-column:1/-1}
+label{font-size:14px;color:var(--mut)}
+.inp{display:flex;align-items:center;background:var(--bg);border:1.5px solid var(--line);border-radius:10px;overflow:hidden}
+.inp:focus-within{border-color:var(--blue)}
+input,select{font:500 16px var(--ff);color:var(--ink);background:var(--bg);border:0;padding:10px 12px;min-height:44px;width:100%}
+select{border:1.5px solid var(--line);border-radius:10px}
+.u{padding:0 12px 0 4px;color:var(--mut);font-size:14px;white-space:nowrap}
+.hint{font-size:13px;color:var(--mut);margin:0}
+.out{position:sticky;top:76px}
+.verdict{scroll-margin-top:76px;border-radius:18px;padding:16px 18px;display:flex;gap:14px;align-items:center}
+.verdict .ic{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 24px var(--ff)}
+.v-ok{background:var(--okbg)}.v-ok .ic{background:var(--ok)}
+.v-bad{background:var(--badbg)}.v-bad .ic{background:var(--bad)}
+.v-warn{background:var(--warnbg)}.v-warn .ic{background:var(--warn)}
+.verdict b{display:block;font-size:20px;line-height:1.2}
+.verdict span{font-size:15px}
+.fig{position:relative;height:270px;margin:14px 0;border:1.5px solid var(--line);border-radius:16px;background:var(--bg);background-image:linear-gradient(var(--blue2) 1px,transparent 1px),linear-gradient(90deg,var(--blue2) 1px,transparent 1px);background-size:24px 24px}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.bars{display:grid;gap:10px;margin:0 0 14px}
+.bar .t{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.bar .t b{white-space:nowrap}
+.track{height:10px;background:var(--card);border-radius:9px;overflow:hidden;margin-top:4px}
+.track i{display:block;height:100%;border-radius:9px;transition:width .35s}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td{padding:8px 0;border-bottom:1px solid var(--line);vertical-align:top}
+td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:12px}
+tr.h td{font-weight:800;color:var(--blue);border-bottom:0;padding-top:14px;text-align:left}
+.notes{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.notes li{padding:10px 12px;border-radius:12px;background:var(--card);font-size:15px}
+.notes li.w{background:var(--warnbg)}.notes li.b{background:var(--badbg)}
+.cta{margin-top:16px;border-radius:18px;background:var(--ink);color:var(--bg);padding:16px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.cta p{margin:0;max-width:420px}
+.cta a{background:var(--yel);color:#141a26;text-decoration:none;font-weight:800;padding:12px 18px;border-radius:12px;min-height:44px;display:inline-flex;align-items:center}
+details{margin-top:14px;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px}
+summary{cursor:pointer;font-weight:700;min-height:28px}
+details p,details li{font-size:14px;color:var(--mut)}
+#mini{display:none}
+@media(max-width:860px){#mini{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:9;border-radius:14px;padding:12px 14px;gap:10px;align-items:center;justify-content:space-between;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.18);border:0;width:auto;min-height:52px;cursor:pointer;color:var(--ink);font:700 15px var(--ff)}#mini.v-ok{background:var(--okbg)}#mini.v-bad{background:var(--badbg)}#mini.v-warn{background:var(--warnbg)}#mini.off{display:none}footer div{padding-bottom:90px}}
+footer{border-top:1px solid var(--line);color:var(--mut);font-size:14px}
+footer div{max-width:1240px;margin:0 auto;padding:20px max(4vw,16px) 30px}
+.svgt{font:500 13px var(--ff);fill:var(--ink)}.svgm{font:500 12px var(--ff);fill:var(--mut)}
+@media(max-width:860px){.calc{grid-template-columns:minmax(0,1fr)}.out{position:static}.fig{height:230px}}
+@media(max-width:420px){.grid2{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.track i{transition:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <div><h1>Карманный инженер ИЖС</h1>
+  <p class="lead">Фундамент, кровля, стропила и балки для частного дома за минуту. Считаем по сводам правил и прямо говорим: проходит или нет.</p></div>
+  <div class="badge"><b>Бесплатно и без регистрации</b>Расчёт ориентировочный и не заменяет проект, но покажет, где риск.</div>
+</div></header>
+<nav class="tabs" aria-label="Калькуляторы"><div class="tabsin" id="tabs"></div></nav>
+<main id="main"></main>
+<button id="mini" type="button" aria-label="Перейти к результату"></button>
+<footer><div>Калькулятор подготовил инженер-конструктор Азат Камалиев («Камалстрой»). Нормы: СП 20.13330.2016, СП 22.13330.2016, СП 63.13330.2018, СП 64.13330.2017. Все результаты ориентировочные: для строительства нужен проект с учётом изысканий и узлов.</div></footer>
+
+<script>
+{
+const TG='https://t.me/kamalievgirya116';
+const $=s=>document.querySelector(s);
+const fm=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('ru-RU',{maximumFractionDigits:d,minimumFractionDigits:0}):'—';
+const rad=a=>a*Math.PI/180;
+const KG={8:0.395,10:0.617,12:0.888,14:1.208,16:1.578};
+const SNOW=[['1','I — 0,5 кПа'],['2','II — 1,0 кПа'],['3','III — 1,5 кПа'],['4','IV — 2,0 кПа'],['5','V — 2,5 кПа'],['6','VI — 3,0 кПа'],['7','VII — 3,5 кПа'],['8','VIII — 4,0 кПа']];
+const Sg=d=>0.5*(+d);
+const SOIL={sand:[300,'Песок плотный, средней крупности, сухой'],firm:[200,'Суглинок, супесь твёрдые и тугопластичные'],soft:[150,'Мягкие суглинки, глины, влажный пылеватый песок'],weak:[100,'Слабый, водонасыщенный грунт'],none:[150,'Не знаю (изысканий нет)']};
+const WALL={gb300:[1.8,'Газобетон D500, 300 мм'],gb375:[2.25,'Газобетон D500, 375 мм'],gb400:[2.4,'Газобетон D500, 400 мм'],br380:[6.84,'Кирпич, 380 мм'],br510:[9.2,'Кирпич, 510 мм'],wood:[1.0,'Брус, 200 мм'],frame:[0.6,'Каркас']};
+const WOOD={1:[14,1.8,'1 сорт'],2:[13,1.6,'2 сорт'],3:[8.5,1.6,'3 сорт']};
+const E=10000;
+const SECT=[[50,100],[50,150],[50,200],[50,250],[75,200],[100,200],[75,250],[100,250]];
+
+const house=[
+ {g:'Дом над фундаментом'},
+ {id:'wall',t:'sel',l:'Стены',o:Object.entries(WALL).map(([k,v])=>[k,v[1]]),d:'gb400',w:1},
+ {id:'fl',t:'sel',l:'Этажность',o:[['1','1 этаж'],['1m','1 этаж + мансарда'],['2','2 этажа']],d:'1m'},
+ {id:'slab',t:'sel',l:'Перекрытия',o:[['wood','Деревянные'],['rc','Ж/б плиты']],d:'wood'},
+ {id:'roof',t:'sel',l:'Кровля',o:[['lite','Металлочерепица, профлист'],['soft','Гибкая черепица'],['heavy','Керамика, ЦПЧ']],d:'lite'},
+ {id:'snow',t:'sel',l:'Снеговой район',o:SNOW,d:'3',h:'Москва и Петербург — обычно III. Свой район смотрите по карте 1 СП 20.13330.2016'},
+ {id:'soil',t:'sel',l:'Грунт под подошвой',o:Object.entries(SOIL).map(([k,v])=>[k,v[1]]),d:'firm',w:1,h:'Точно грунт покажут только геологические изыскания'}];
+
+function houseLoad(v,A,B,kind){
+ const per=2*(A+B),wl=per*1.25,wh={1:3,'1m':4.5,2:6}[v.fl];
+ const walls=wl*wh*WALL[v.wall][0]*1.1;
+ const area=A*B;
+ const nFl={1:1,'1m':1,2:2}[v.fl]+(kind==='strip'?1:0);
+ const dead=v.slab==='wood'?0.6:4.0;
+ const live=nFl*1.5*1.3*area+(kind==='plate'?1.5*1.3*area:0);
+ const floors=nFl*dead*1.1*area;
+ const ar=(A+1)*(B+1);
+ const roof=({lite:0.5,soft:0.6,heavy:1.0}[v.roof])*1.2*ar;
+ const snow=0.7*Sg(v.snow)*1.4*ar;
+ return {walls,floors,live,roof,snow,sum:walls+floors+live+roof+snow};
+}
+function verdictOf(list){return list.includes('bad')?'bad':list.includes('warn')?'warn':'ok'}
+function pct(x){return Math.max(0,x*100)}
+function barColor(u){return u>1?'var(--bad)':u>0.85?'var(--warn)':'var(--ok)'}
+
+/* ---------- схемы ---------- */
+const T=(x,y,s,c='svgt',a='start')=>`<text x="${x}" y="${y}" class="${c}" text-anchor="${a}">${s}</text>`;
+function arrows(x1,x2,y,n,len){let s='';for(let i=0;i<=n;i++){const x=x1+(x2-x1)*i/n;s+=`<line x1="${x}" y1="${y-len}" x2="${x}" y2="${y-6}" stroke="var(--blue)" stroke-width="1.6"/><path d="M${x-4} ${y-11}L${x} ${y-4}L${x+4} ${y-11}Z" fill="var(--blue)"/>`}return s+`<line x1="${x1}" y1="${y-len}" x2="${x2}" y2="${y-len}" stroke="var(--blue)" stroke-width="1.6"/>`}
+function support(x,y){return `<path d="M${x} ${y}L${x-10} ${y+16}L${x+10} ${y+16}Z" fill="none" stroke="var(--ink)" stroke-width="1.6"/><line x1="${x-14}" y1="${y+19}" x2="${x+14}" y2="${y+19}" stroke="var(--ink)"/>`}
+function hatch(id,col){return `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="${col}" stroke-width="2"/></pattern>`}
+function dots(id,col){return `<pattern id="${id}" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="${col}"/></pattern>`}
+
+function schemeBeam(W,H,r){
+ const pad=W<480?24:40,x1=pad,x2=W-pad-(W<480?0:110),y=H*0.48,len=34;
+ const fmax=Math.min(40,8+60*Math.min(r.fu,1.5));
+ let curve=`M${x1} ${y}`;for(let i=1;i<=30;i++){const t=i/30,x=x1+(x2-x1)*t;curve+=` L${x} ${y+fmax*Math.sin(Math.PI*t)}`}
+ const bh=r.h/(r.h+r.b)*70,bw=r.b/(r.h+r.b)*70,sx=x2+40,sy=y-bh/2;
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Расчётная схема балки">${arrows(x1,x2,y-2,Math.max(6,Math.round((x2-x1)/40)),len)}
+ ${T((x1+x2)/2,y-len-10,`q = ${fm(r.q,2)} кН/м`,'svgt','middle')}
+ <line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/>
+ <path d="${curve}" fill="none" stroke="${barColor(r.fu)}" stroke-width="2" stroke-dasharray="6 5"/>
+ ${support(x1,y+4)}${support(x2,y+4)}
+ <line x1="${x1}" y1="${H-26}" x2="${x2}" y2="${H-26}" stroke="var(--mut)"/><line x1="${x1}" y1="${H-32}" x2="${x1}" y2="${H-20}" stroke="var(--mut)"/><line x1="${x2}" y1="${H-32}" x2="${x2}" y2="${H-20}" stroke="var(--mut)"/>
+ ${T((x1+x2)/2,H-32,`${r.spanLbl} ${fm(r.L,2)} м`,'svgm','middle')}
+ ${T((x1+x2)/2,y+fmax+22,`прогиб ${fm(r.f,1)} мм`,'svgt','middle')}
+ ${W<480?'':`<rect x="${sx}" y="${sy}" width="${bw}" height="${bh}" fill="#c98a4b" stroke="var(--ink)"/>${T(sx+bw/2,sy+bh+18,`${r.b}×${r.h}`,'svgt','middle')}${T(sx+bw/2,sy-8,'сечение','svgm','middle')}`}</svg>`;
+}
+function schemeRafter(W,H,r){
+ const a=rad(r.a),pad=34,x1=pad,y1=H-44;
+ let run=W-pad*2-(W<480?0:60),rise=run*Math.tan(a);
+ if(rise>H-90){rise=H-90;run=rise/Math.tan(a)}
+ const x2=x1+run,y2=y1-rise,n=Math.max(5,Math.round(run/38));
+ let ar='';for(let i=0;i<=n;i++){const x=x1+run*i/n,y=y1-rise*i/n;ar+=`<line x1="${x}" y1="${y-34}" x2="${x}" y2="${y-7}" stroke="var(--blue)" stroke-width="1.5"/><path d="M${x-4} ${y-12}L${x} ${y-5}L${x+4} ${y-12}Z" fill="var(--blue)"/>`}
+ const mx=(x1+x2)/2,my=(y1+y2)/2,nx=Math.sin(a),ny=Math.cos(a),fd=4+14*Math.min(r.fu,1.5);
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Расчётная схема стропила">${ar}<line x1="${x1}" y1="${y1-34}" x2="${x2}" y2="${y2-34}" stroke="var(--blue)" stroke-width="1.5"/>
+ <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c98a4b" stroke-width="9" stroke-linecap="round"/>
+ <path d="M${x1} ${y1} Q${mx+nx*fd*2} ${my+ny*fd*2} ${x2} ${y2}" fill="none" stroke="${barColor(r.fu)}" stroke-width="2" stroke-dasharray="6 5"/>
+ ${support(x1,y1+5)}${support(x2,y2+5)}
+ <path d="M${x1+46} ${y1} A46 46 0 0 0 ${x1+46*Math.cos(a)} ${y1-46*Math.sin(a)}" fill="none" stroke="var(--ink)"/>${T(x1+54,y1-8,`${r.a}°`)}
+ <line x1="${x1}" y1="${y1+30}" x2="${x2}" y2="${y1+30}" stroke="var(--mut)"/>${T(mx,y1+26,`проекция ${fm(r.L,2)} м`,'svgm','middle')}
+ ${T(mx+nx*26+8,my+ny*26+34,`${r.b}×${r.h}, шаг ${r.s}`,'svgt','start')}
+ ${T(x2-8,Math.max(16,y2-48),`снег + кровля ${fm(r.qh,2)} кН/м`,'svgm','end')}</svg>`;
+}
+function schemePlate(W,H,r){
+ const x1=W<480?18:40,x2=W-(W<480?130:170),top=48,hp=Math.max(26,r.h/4),xps=r.xps?Math.max(12,r.xps/6):0,gr=Math.max(10,r.gravel/6),sd=Math.max(14,r.sand/7);
+ let y=top;const lay=[];
+ lay.push(`<rect x="${x1}" y="${y}" width="${x2-x1}" height="${hp}" fill="#b9bec7" stroke="var(--ink)"/>`);
+ const d1=y+9,d2=y+hp-9;let rb='';for(let x=x1+12;x<x2-6;x+=16){rb+=`<circle cx="${x}" cy="${d1}" r="2.8" fill="#c2410c"/><circle cx="${x}" cy="${d2}" r="2.8" fill="#c2410c"/>`}
+ lay.push(rb,`<line x1="${x1+8}" y1="${d1}" x2="${x2-8}" y2="${d1}" stroke="#c2410c" stroke-width="1.2"/><line x1="${x1+8}" y1="${d2}" x2="${x2-8}" y2="${d2}" stroke="#c2410c" stroke-width="1.2"/>`);
+ const lbl=[[y+hp/2,`Плита ${r.h} мм, бетон B22,5`]];y+=hp;
+ if(xps){lay.push(`<rect x="${x1}" y="${y}" width="${x2-x1}" height="${xps}" fill="#9fd3ff" stroke="var(--ink)"/>`);lbl.push([y+xps/2,`ЭППС ${r.xps} мм`]);y+=xps}
+ lay.push(`<rect x="${x1-14}" y="${y}" width="${x2-x1+28}" height="${gr}" fill="url(#gr)" stroke="var(--ink)"/>`);lbl.push([y+gr/2,`Щебень ${r.gravel} мм`]);y+=gr;
+ lay.push(`<rect x="${x1-24}" y="${y}" width="${x2-x1+48}" height="${sd}" fill="url(#sd)" stroke="var(--ink)"/>`);lbl.push([y+sd/2,`Песок ${r.sand} мм`]);y+=sd;
+ lay.push(`<line x1="${x1-30}" y1="${y}" x2="${x2+30}" y2="${y}" stroke="var(--ink)" stroke-dasharray="3 4"/>`);
+ const yy=top-14;
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Разрез плитного фундамента"><defs>${dots('sd','#b58a3c')}${hatch('gr','#7b8794')}</defs>
+ ${arrows(x1+10,x2-10,yy+4,Math.max(5,Math.round((x2-x1)/45)),22)}${T((x1+x2)/2,yy-24,`давление ${fm(r.p,0)} кПа`,'svgt','middle')}
+ ${lay.join('')}${lbl.map(([yv,s])=>`<line x1="${x2+4}" y1="${yv}" x2="${x2+18}" y2="${yv}" stroke="var(--mut)"/>${T(x2+22,yv+4,s,'svgm')}`).join('')}
+ ${T((x1+x2)/2,H-12,`арматура Ø${r.d} шаг ${r.s} мм, 2 сетки`,'svgm','middle')}</svg>`;
+}
+function schemeStrip(W,H,r){
+ const cx=W<480?W*0.38:W*0.4,sc=Math.min((H-70)/(r.H/1000+0.45),(W*0.32)/(r.b/1000+0.5)),bw=r.b/1000*sc,hh=r.H/1000*sc,gy=36+(r.H-r.d)/1000*sc,top=36,bot=top+hh,sd=Math.max(12,r.sand/1000*sc);
+ const xl=cx-bw/2,xr=cx+bw/2,dfy=gy+r.dfn*sc;
+ let rb='';const n=r.n/2;for(let i=0;i<n;i++){const x=xl+12+(bw-24)*(n===1?0.5:i/(n-1));rb+=`<circle cx="${x}" cy="${top+12}" r="3.5" fill="#c2410c"/><circle cx="${x}" cy="${bot-12}" r="3.5" fill="#c2410c"/>`}
+ const fz=Math.min(dfy,H-8);
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Разрез ленточного фундамента"><defs>${dots('sd2','#b58a3c')}${hatch('soil','#a78b6b')}</defs>
+ <rect x="0" y="${gy}" width="${W}" height="${H-gy}" fill="url(#soil)" opacity=".35"/><line x1="0" y1="${gy}" x2="${W}" y2="${gy}" stroke="var(--ink)" stroke-width="2"/>
+ <rect x="${xl-0.2*sc}" y="${bot}" width="${bw+0.4*sc}" height="${sd}" fill="url(#sd2)" stroke="var(--ink)"/>
+ <rect x="${xl}" y="${top}" width="${bw}" height="${hh}" fill="#b9bec7" stroke="var(--ink)" stroke-width="1.5"/>
+ <rect x="${xl+7}" y="${top+7}" width="${bw-14}" height="${hh-14}" fill="none" stroke="#c2410c" stroke-width="1.2"/>${rb}
+ <line x1="0" y1="${fz}" x2="${W}" y2="${fz}" stroke="#1c46d6" stroke-width="1.6" stroke-dasharray="7 5"/>${T(W-8,fz-6,`промерзание ${fm(r.dfn,2)} м`,'svgm','end')}
+ ${T(xr+14,top+14,`лента ${r.b}×${r.H} мм`)}${T(xr+14,gy-6,'уровень земли','svgm')}${T(xr+14,bot+sd/2+4,`песок ${r.sand} мм`,'svgm')}
+ ${T(xr+14,(gy+bot)/2+4,`заглубление ${r.d} мм`,'svgm')}${T(xl-10,top+hh/2,`${fm(r.p,0)} кПа`,'svgt','end')}</svg>`;
+}
+function schemeRoof(W,H,r){
+ const pad=30,availW=W-pad*2-(W<480?0:40);let half=availW/2;let rise=half*Math.tan(rad(r.a))*(r.type==='shed'?2:1);
+ const maxR=H-120;let s=1;if(rise>maxR){s=maxR/rise}
+ const cx=W/2,base=H-58,wh=48,bw=availW*s*0.8;
+ const xl=cx-bw/2,xr=cx+bw/2,ov=Math.min(34,bw*0.08),rh=bw/2*Math.tan(rad(r.a))*(r.type==='shed'?2:1);
+ const roofP=r.type==='shed'?`M${xl-ov} ${base-wh+ov*Math.tan(rad(r.a))} L${xr+ov} ${base-wh-rh-ov*Math.tan(rad(r.a))}`:`M${xl-ov} ${base-wh+ov*Math.tan(rad(r.a))} L${cx} ${base-wh-rh} L${xr+ov} ${base-wh+ov*Math.tan(rad(r.a))}`;
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Разрез кровли"><rect x="${xl}" y="${base-wh}" width="${bw}" height="${wh}" fill="var(--card)" stroke="var(--ink)"/>
+ <path d="${roofP}" fill="none" stroke="#c2410c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>
+ <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="var(--ink)" stroke-width="2"/>
+ ${T(cx,base-wh-rh-14,r.type==='shed'?'':`конёк +${fm(r.rise,2)} м`,'svgt','middle')}
+ ${T(xl+8,base-wh/2+4,`угол ${r.a}°`,'svgm')}${T(cx,base+20,`ширина дома ${fm(r.B,2)} м · скат ${fm(r.Ls,2)} м`,'svgm','middle')}
+ ${T(cx,base+40,`площадь кровли ${fm(r.area,1)} м²`,'svgt','middle')}</svg>`;
+}
+
+/* ---------- калькуляторы ---------- */
+const CALCS=[
+{id:'plita',tab:'Плитный фундамент',title:'Плитный фундамент',sub:'Монолитная плита: материалы, давление на грунт и армирование.',
+ f:[{g:'Плита'},{id:'A',l:'Длина',u:'м',d:10},{id:'B',l:'Ширина',u:'м',d:9},{id:'h',l:'Толщина плиты',u:'мм',d:250},{id:'xps',l:'Утеплитель ЭППС',u:'мм',d:100,h:'0, если без утепления'},
+  {id:'dia',t:'sel',l:'Арматура',o:[['10','Ø10 А500С'],['12','Ø12 А500С'],['14','Ø14 А500С'],['16','Ø16 А500С']],d:'12'},{id:'s',t:'sel',l:'Шаг сетки',o:[['150','150 мм'],['200','200 мм']],d:'200'},
+  {id:'gravel',l:'Щебень',u:'мм',d:150},{id:'sand',l:'Песок',u:'мм',d:300},...house],
+ calc(v){
+  const A=+v.A,B=+v.B,h=+v.h,d=+v.dia,s=+v.s,area=A*B;
+  const Vc=area*h/1000;
+  const nA=Math.floor(B/(s/1000))+1,nB=Math.floor(A/(s/1000))+1,lay=nA*(A-0.1)+nB*(B-0.1);
+  const pbar=2*(A+B)/(s/1000)*((h-80)/1000+0.8);
+  const Lr=(2*lay*1.07+pbar),mr=Lr*KG[d];
+  const As=1000/s*Math.PI*d*d/4,h0=h-40-d,mu=As/(1000*h0)*100;
+  const hl=houseLoad(v,A,B,'plate'),pl=25*Vc*1.1,N=hl.sum+pl,p=N/area,R=SOIL[v.soil][0],u=p/R;
+  const st=[u>1?'bad':'ok',h<200?'warn':'ok',mu<0.1?'warn':'ok',v.soil==='none'||v.soil==='weak'?'warn':'ok'];
+  const notes=[];
+  if(u>1)notes.push(['b',`Давление на грунт ${fm(p,0)} кПа больше допустимого ≈ ${R} кПа. Нужна плита большей площади, более лёгкие стены или замена слабого грунта под подушкой.`]);
+  if(h<200)notes.push(['w','Плита тоньше 200 мм для жилого дома — риск трещин. Обычно делают 200–300 мм.']);
+  if(mu<0.1)notes.push(['w',`Армирование ${fm(mu,2)}% на направление меньше минимальных 0,1% по СП 63 — уменьшите шаг или увеличьте диаметр.`]);
+  if(v.soil==='none')notes.push(['w','Грунт не известен — принято 150 кПа. Перед стройкой закажите геологию: она меняет решение сильнее любого калькулятора.']);
+  if(v.soil==='weak')notes.push(['w','На слабом водонасыщенном грунте нужен индивидуальный расчёт осадок и, возможно, сваи.']);
+  notes.push(['','Бетон берите B22,5 (М300) F150 W6. Нижний защитный слой 40 мм, верхний 30 мм.']);
+  const vd=verdictOf(st);
+  return {vd,head:vd==='bad'?'Грунт не выдержит':vd==='warn'?'Проходит с оговорками':'Плита проходит',
+   msg:`Дом с плитой давит на грунт ${fm(p,0)} кПа при допустимом ≈ ${R} кПа.`,
+   bars:[['Давление на грунт',u,`${fm(p,0)} из ${R} кПа`],['Армирование (мин. 0,1%)',0.1/Math.max(mu,0.001),`${fm(mu,2)}%`]],
+   rows:[['h','Бетон'],['Объём бетона (+5% запас)',`${fm(Vc*1.05,1)} м³`],['Опалубка по контуру',`${fm(2*(A+B)*(h/1000+0.1),1)} м²`],
+    ['h','Арматура'],[`Ø${d} — сетки и П-обрамление`,`${fm(mr/1000,2)} т`],['Погонаж',`${fm(Lr,0)} м`],['Вязальная проволока ≈',`${fm(mr*0.01,0)} кг`],
+    ['h','Основание'],['Песок (с уплотнением)',`${fm((A+0.6)*(B+0.6)*v.sand/1000*1.2,1)} м³`],['Щебень (с уплотнением)',`${fm((A+0.6)*(B+0.6)*v.gravel/1000*1.3,1)} м³`],
+    ['Геотекстиль',`${fm((A+1)*(B+1),0)} м²`],...(+v.xps?[['ЭППС, плиты 1180×580',`${Math.ceil(area*1.05/0.6844)} шт`]]:[]),
+    ['h','Нагрузки'],['Вес дома с плитой (расчётный)',`${fm(N/9.81,0)} т`],['Стены / перекрытия / кровля+снег',`${fm(hl.walls/9.81,0)} / ${fm((hl.floors+hl.live)/9.81,0)} / ${fm((hl.roof+hl.snow)/9.81,0)} т`]],
+   notes,svg:(W,H)=>schemePlate(W,H,{h,xps:+v.xps,gravel:+v.gravel,sand:+v.sand,d,s,p}),
+   how:['Объём бетона — площадь × толщина, плюс 5% на потери.','Арматура — две сетки в обе стороны с шагом, нахлёсты +7%, П-образные стержни по торцам.','Нагрузка — вес стен (с внутренними несущими +25%), перекрытий, полезная 1,5 кПа по СП 20, кровля и снег 0,7·Sg·1,4 с коэффициентами надёжности.','Давление сравнивается с осторожной оценкой расчётного сопротивления грунта по таблицам приложения Б СП 22.13330.2016 — это ориентир, не замена изысканиям.']};
+ }},
+{id:'lenta',tab:'Ленточный фундамент',title:'Ленточный фундамент',sub:'Монолитная лента: бетон, арматура, ширина подошвы и промерзание.',
+ f:[{g:'Лента'},{id:'A',l:'Длина дома',u:'м',d:10},{id:'B',l:'Ширина дома',u:'м',d:8},{id:'Li',l:'Внутренние несущие стены',u:'м',d:8,h:'Длина стен, под которые тоже идёт лента'},
+  {id:'b',l:'Ширина ленты',u:'мм',d:400},{id:'H',l:'Высота ленты',u:'мм',d:1000},{id:'dd',l:'Заглубление в грунт',u:'мм',d:700},{id:'sand',l:'Песчаная подушка',u:'мм',d:300},
+  {id:'n',t:'sel',l:'Продольная арматура',o:[['4','4 стержня'],['6','6 стержней']],d:'4'},{id:'dia',t:'sel',l:'Диаметр',o:[['10','Ø10'],['12','Ø12'],['14','Ø14']],d:'12'},
+  {id:'dfn',l:'Глубина промерзания',u:'м',d:1.2,h:'Нормативная для вашего района (СП 22.13330, формула 5.3)'},...house],
+ calc(v){
+  const A=+v.A,B=+v.B,L=2*(A+B)+ +v.Li,b=+v.b,H=+v.H,d=+v.dd,dia=+v.dia,n=+v.n,dfn=+v.dfn;
+  const Vc=L*b/1000*H/1000;
+  const longL=n*L*1.1,cnt=Math.ceil(L/0.3),sl=(2*((b-80)+(H-80))/1000+0.2)*cnt;
+  const mr=longL*KG[dia],ms=sl*KG[8];
+  const hl=houseLoad(v,A,B,'strip'),self=25*Vc*1.1,Nm=(hl.sum+self)/L,R=SOIL[v.soil][0],p=Nm/(b/1000),u=p/R,bmin=Nm/R*1000;
+  const heave=v.soil!=='sand',deep=d/1000>=dfn;
+  const st=[u>1?'bad':'ok',!deep&&heave?'warn':'ok',v.soil==='none'?'warn':'ok',H<d+150?'warn':'ok'];
+  const notes=[];
+  if(u>1)notes.push(['b',`Подошва перегружена: нужно ширина не меньше ${fm(Math.ceil(bmin/50)*50,0)} мм или устройте уширение подошвы.`]);
+  if(!deep&&heave)notes.push(['w',`Лента заложена выше глубины промерзания (${fm(dfn,2)} м) на пучинистом грунте. Это рабочий вариант мелкозаглублённого фундамента, но только с подушкой из песка или ПГС, утеплённой «юбкой» из ЭППС и дренажом.`]);
+  if(deep)notes.push(['','Подошва ниже глубины промерзания — силы пучения на подошву не действуют, но боковые поверхности всё равно лучше утеплить и гидроизолировать.']);
+  if(H<d+150)notes.push(['w','Цоколь над землёй ниже 150 мм — стены будут мокнуть. Обычно оставляют 200–400 мм.']);
+  if(v.soil==='none')notes.push(['w','Грунт не известен — принято 150 кПа. Закажите геологию до заливки.']);
+  notes.push(['','Бетон B22,5 (М300) F150 W6. Защитный слой 40 мм. В углах — Г-образные стержни с нахлёстом.']);
+  const vd=verdictOf(st);
+  return {vd,head:vd==='bad'?'Лента не проходит':vd==='warn'?'Проходит с оговорками':'Лента проходит',
+   msg:`Нагрузка на 1 м ленты ${fm(Nm,1)} кН, давление под подошвой ${fm(p,0)} кПа при допустимом ≈ ${R} кПа.`,
+   bars:[['Давление под подошвой',u,`${fm(p,0)} из ${R} кПа`],['Заглубление относительно промерзания',deep?0.5:(heave?0.95:0.7),`${d} из ${fm(dfn*1000,0)} мм`]],
+   rows:[['h','Бетон'],['Длина ленты',`${fm(L,1)} м`],['Объём бетона (+5%)',`${fm(Vc*1.05,1)} м³`],['Опалубка (две стороны)',`${fm(2*L*H/1000,0)} м²`],
+    ['h','Арматура'],[`Продольная ${n}×Ø${dia}`,`${fm(mr/1000,2)} т (${fm(longL,0)} м)`],[`Хомуты Ø8 шаг 300`,`${fm(ms,0)} кг (${cnt} шт)`],
+    ['h','Основание и проверка'],['Песок в подушку',`${fm(L*(b+400)/1000*v.sand/1000*1.2,1)} м³`],['Нужная ширина подошвы',`≥ ${fm(Math.ceil(bmin/10)*10,0)} мм`],['Вес дома с лентой (расчётный)',`${fm((hl.sum+self)/9.81,0)} т`]],
+   notes,svg:(W,H2)=>schemeStrip(W,H2,{b,H,d,sand:+v.sand,n,dfn,p}),
+   how:['Длина ленты — периметр плюс внутренние несущие стены.','Нагрузка на погонный метр — вес дома с цокольным перекрытием и снегом, делённый на длину ленты, плюс вес самой ленты.','Требуемая ширина подошвы b ≥ N/R, где R — осторожная оценка по таблицам приложения Б СП 22.13330.2016.','Глубина промерзания задаётся вручную: нормативное значение для района берётся по СП 22.13330.2016 (п. 5.5).']};
+ }},
+{id:'krovlya',tab:'Кровля',title:'Кровля',sub:'Площадь крыши и материалы: покрытие, обрешётка, мембраны, доборы.',
+ f:[{g:'Крыша'},{id:'type',t:'sel',l:'Тип',o:[['gable','Двускатная'],['shed','Односкатная']],d:'gable'},{id:'mat',t:'sel',l:'Покрытие',o:[['metal','Металлочерепица'],['prof','Профнастил'],['soft','Гибкая черепица']],d:'metal'},
+  {id:'A',l:'Длина дома (вдоль конька)',u:'м',d:10},{id:'B',l:'Ширина дома',u:'м',d:8},{id:'a',l:'Угол ската',u:'°',d:30},{id:'s',l:'Шаг стропил',u:'мм',d:600},
+  {id:'e',l:'Свес по карнизу',u:'м',d:0.5},{id:'g',l:'Свес по фронтону',u:'м',d:0.4}],
+ calc(v){
+  const A=+v.A,B=+v.B,a=+v.a,e=+v.e,g=+v.g,sides=v.type==='gable'?2:1,len=A+2*g,cos=Math.cos(rad(a));
+  const run=v.type==='gable'?B/2+e:B+2*e,Ls=run/cos,area=sides*Ls*len,rise=(v.type==='gable'?B/2:B)*Math.tan(rad(a));
+  const nr=(Math.ceil(len/(+v.s/1000))+1)*sides;
+  const minA={metal:14,prof:12,soft:12}[v.mat];
+  const rows=[['h','Геометрия'],['Площадь кровли',`${fm(area,1)} м²`],['Длина ската',`${fm(Ls,2)} м`],[v.type==='gable'?'Высота конька над стенами':'Перепад высот',`${fm(rise,2)} м`],['Стропил',`${nr} шт по ${fm(Ls+0.1,2)} м`],['h','Покрытие']];
+  if(v.mat==='soft'){
+   rows.push(['Гибкая черепица (уп. 3 м²)',`${Math.ceil(area*1.05/3)} уп.`],['OSB-3 12 мм, 2500×1250',`${Math.ceil(area*1.1/3.125)} листов`],['Подкладочный ковёр (рулон 15 м²)',`${Math.ceil(area*1.15/15)} рул.`],['Обрешётка под OSB 25×100, шаг 300',`${fm(sides*(Math.ceil(Ls/0.3)+1)*len,0)} м.п.`]);
+  }else{
+   const cols=Math.ceil(len/1.1)*sides;
+   rows.push([v.mat==='metal'?'Листы металлочерепицы':'Листы профнастила',`${cols} шт × ${fm(Math.ceil((Ls+0.05)*20)/20,2)} м`],['Обрешётка 25×100, шаг 350',`${fm(sides*(Math.ceil(Ls/0.35)+1)*len,0)} м.п.`],['Кровельные саморезы ≈',`${Math.ceil(area*8/250)*250} шт`]);
+  }
+  rows.push(['h','Под покрытие'],['Контробрешётка 50×50',`${fm(nr*Ls,0)} м.п.`],['Гидроветрозащитная мембрана (рулон 75 м²)',`${Math.ceil(area*1.15/75)} рул.`],['h','Доборы'],
+   ...(v.type==='gable'?[['Коньковая планка',`${fm(len,1)} м`]]:[]),['Карнизная планка',`${fm(len*sides,1)} м`],['Торцевая (ветровая) планка',`${fm(Ls*2*sides,1)} м`],['Снегозадержатели по карнизу',`${fm(len*sides,1)} м`]);
+  const notes=[];const st=[a<minA?'bad':'ok',a>50?'warn':'ok'];
+  if(a<minA)notes.push(['b',`Для этого покрытия минимальный уклон обычно ${minA}° по инструкциям производителей — при ${a}° будут протечки.`]);
+  if(a>50)notes.push(['w','Крутой скат: сильнее ветровая нагрузка и больше материала, но снег почти не держится.']);
+  notes.push(['','Количество листов дано без учёта раскладки по окнам и ендовам. Для сложной крыши закажите раскладку у поставщика.']);
+  const vd=verdictOf(st);
+  return {vd,head:vd==='bad'?'Уклон мал для покрытия':vd==='warn'?'Посчитано, есть замечания':'Кровля посчитана',msg:`Площадь крыши ${fm(area,1)} м², скат ${fm(Ls,2)} м при угле ${a}°.`,
+   bars:[['Уклон / минимальный для покрытия',minA/Math.max(a,0.1),`${a}° из мин. ${minA}°`]],rows,notes,svg:(W,H)=>schemeRoof(W,H,{type:v.type,a,B,Ls,area,rise}),
+   how:['Длина ската = (полупролёт + свес) / cos α.','Площадь = длина ската × (длина дома + 2 свеса) × количество скатов.','Ширина листа металлочерепицы и профнастила принята рабочей 1,1 м, запас на гибкую черепицу 5%, на мембраны — 15% на нахлёсты.','Минимальные уклоны — типовые значения из инструкций производителей; уточняйте для своей марки.']};
+ }},
+{id:'stropila',tab:'Стропила',title:'Стропила',sub:'Хватит ли сечения стропил под снег и вес кровли: прочность и прогиб.',
+ f:[{g:'Стропило'},{id:'L',l:'Пролёт по горизонтали',u:'м',d:4.2,w:1,h:'Расстояние между опорами в плане (мауэрлат — прогон/конёк). При опоре на коньковый прогон это примерно половина ширины дома'},
+  {id:'a',l:'Угол ската',u:'°',d:30},{id:'s',l:'Шаг стропил',u:'мм',d:600},{id:'b',l:'Ширина сечения',u:'мм',d:50},{id:'h',l:'Высота сечения',u:'мм',d:150},
+  {id:'gr',t:'sel',l:'Древесина',o:[['1','Сосна, ель 1 сорт'],['2','Сосна, ель 2 сорт'],['3','Сосна, ель 3 сорт']],d:'2'},
+  {id:'roof',t:'sel',l:'Кровельный пирог',o:[['0.3','Металл, без утепления'],['0.45','Гибкая черепица + OSB'],['0.65','Металл + утепление 200 мм'],['0.8','Гибкая черепица + утепление'],['1.0','Керамика, ЦПЧ']],d:'0.65',w:1},
+  {id:'snow',t:'sel',l:'Снеговой район',o:SNOW,d:'3',w:1,h:'Москва и Петербург — обычно III. Свой район — по карте 1 СП 20.13330.2016'}],
+ calc(v){
+  const r=timber(v,'raf');return r;
+ }},
+{id:'balka',tab:'Балка перекрытия',title:'Деревянная балка перекрытия',sub:'Выдержит ли балка и не будет ли пружинить пол.',
+ f:[{g:'Балка'},{id:'L',l:'Пролёт в свету',u:'м',d:4.5},{id:'s',l:'Шаг балок',u:'мм',d:600},{id:'b',l:'Ширина сечения',u:'мм',d:50},{id:'h',l:'Высота сечения',u:'мм',d:200},
+  {id:'gr',t:'sel',l:'Древесина',o:[['1','Сосна, ель 1 сорт'],['2','Сосна, ель 2 сорт'],['3','Сосна, ель 3 сорт']],d:'2'},
+  {id:'use',t:'sel',l:'Назначение',o:[['1.5','Межэтажное, жилые комнаты'],['0.7','Чердачное, без эксплуатации'],['2.0','Межэтажное с перегородками']],d:'1.5'},
+  {id:'pie',t:'sel',l:'Пирог перекрытия',o:[['0.5','Доска/фанера по балкам'],['0.7','С утеплителем и потолком'],['1.4','С лёгкой стяжкой 30 мм']],d:'0.7',w:1}],
+ calc(v){return timber(v,'beam')}}
+];
+
+function timber(v,kind){
+ const L=+v.L,s=+v.s/1000,b=+v.b,h=+v.h,[Ri,Rs]=WOOD[v.gr];
+ let qn,q,Lb,qperp,a=0,mu=1,S0=0,qh=0;
+ if(kind==='raf'){
+  a=+v.a;const c=Math.cos(rad(a));mu=a<=30?1:a>=60?0:(60-a)/30;S0=0.7*mu*Sg(v.snow);
+  const gh=+v.roof/c*s,sh=S0*s;qh=gh+sh;q=gh*1.15+sh*1.4;Lb=L/c;qperp=qh*c*c;qn=qh;
+ }else{
+  const g=+v.pie,p=+v.use;qn=(g+p)*s;q=(g*1.15+p*1.3)*s;Lb=L;qperp=qn;
+ }
+ const res=(bb,hh,ss)=>{const W=bb*hh*hh/6,I=bb*hh**3/12;const qq=q*ss/s,qp=qperp*ss/s;
+  const M=qq*L*L/8,Q=qq*L/2,sig=M*1e6/W,tau=1.5*Q*1e3/(bb*hh),f=5*qp*(Lb*1000)**4/(384*E*I),fl=Lb*1000/(kind==='raf'?200:250);
+  return {M,Q,sig,tau,f,fl,us:sig/Ri,ut:tau/Rs,uf:f/fl}};
+ const r=res(b,h,s);const worst=Math.max(r.us,r.ut,r.uf);
+ let alt=SECT.find(([bb,hh])=>{const x=res(bb,hh,s);return Math.max(x.us,x.ut,x.uf)<=1});
+ const altS=[0.6,0.5,0.4,0.3].find(ss=>{if(ss>=s)return false;const x=res(b,h,ss);return Math.max(x.us,x.ut,x.uf)<=1});
+ const notes=[];const st=[worst>1?'bad':worst>0.9?'warn':'ok'];
+ if(worst>1){notes.push(['b',`Сечение ${b}×${h} с шагом ${v.s} мм не проходит${r.uf>r.us?' по прогибу':' по прочности'}.`+(alt?` Подойдёт ${alt[0]}×${alt[1]} с тем же шагом.`:'')+(altS?` Или уменьшите шаг до ${altS*1000} мм.`:'')])}
+ else if(worst>0.9)notes.push(['w','Запас меньше 10% — любая ошибка в древесине или нагрузке съест его. Лучше взять сечение на ступень больше.']);
+ if(kind==='beam'&&r.f>L*1000/350&&worst<=1)notes.push(['w',`Прогиб в норме, но больше L/350 — пол может ощутимо пружинить. Для жёсткости возьмите балку выше или уменьшите шаг.`]);
+ if(kind==='raf'){notes.push(['','Ветер, сжатие от распора и узлы опирания здесь не проверяются — их считают в проекте. Сосредоточенная нагрузка от человека тоже не учтена.']);if(mu<1)notes.push(['',`При угле ${a}° на скате остаётся ${fm(mu*100,0)}% снега (коэффициент μ по СП 20).`])}
+ if(v.gr==='3')notes.push(['w','3 сорт для несущих элементов брать не стоит: много сучков, прочность заметно ниже.']);
+ notes.push(['','Древесина — влажностью до 20%, с антисептиком.']);
+ const vd=verdictOf(st);
+ return {vd,head:vd==='bad'?(kind==='raf'?'Стропило не проходит':'Балка не проходит'):vd==='warn'?'Проходит впритык':(kind==='raf'?'Стропило проходит':'Балка проходит'),
+  msg:`Используется ${fm(worst*100,0)}% несущей способности (самая слабая проверка — ${r.uf>=r.us&&r.uf>=r.ut?'прогиб':r.us>=r.ut?'изгиб':'срез'}).`,
+  bars:[['Прочность на изгиб',r.us,`${fm(r.sig,1)} из ${Ri} МПа`],['Прогиб',r.uf,`${fm(r.f,1)} из ${fm(r.fl,1)} мм`],['Срез у опоры',r.ut,`${fm(r.tau,2)} из ${fm(Rs,1)} МПа`]],
+  rows:[['h','Нагрузки'],...(kind==='raf'?[['Снег на горизонтальную проекцию S₀',`${fm(S0,2)} кПа`],['Нагрузка на стропило (норм./расч.)',`${fm(qn,2)} / ${fm(q,2)} кН/м`]]:[['Нагрузка на балку (норм./расч.)',`${fm(qn,2)} / ${fm(q,2)} кН/м`]]),
+   ['h','Усилия'],['Изгибающий момент',`${fm(r.M,2)} кН·м`],['Поперечная сила',`${fm(r.Q,2)} кН`],['h','Результат'],['Прогиб / допустимый',`${fm(r.f,1)} / ${fm(r.fl,1)} мм (L/${kind==='raf'?200:250})`],
+   ...(alt?[['Минимальное сечение при этом шаге',`${alt[0]}×${alt[1]} мм`]]:[['Минимальное сечение при этом шаге','больше 100×250 — нужен проект']])],
+  notes,svg:(W,H)=>kind==='raf'?schemeRafter(W,H,{a,L,b,h,s:+v.s,fu:r.uf,qh:q}):schemeBeam(W,H,{q,L,f:r.f,fu:r.uf,b,h,spanLbl:'пролёт'}),
+  how:kind==='raf'?['Снег: S₀ = 0,7·μ·Sg (СП 20.13330.2016, ф. 10.1), коэффициент надёжности 1,4. μ = 1 до 30°, 0 при 60° и круче.','Вес кровли задан на 1 м² ската, переведён на горизонтальную проекцию; коэффициент надёжности 1,15.','Стропило — однопролётная шарнирная балка: M = qL²/8 по горизонтальной проекции, прогиб по длине ската от нормальной составляющей нагрузки.','Расчётное сопротивление изгибу сосны: 14 / 13 / 8,5 МПа для 1/2/3 сорта (длительное, класс эксплуатации 1–2), E = 10 000 МПа (СП 64.13330.2017). Предельный прогиб L/200 (СП 20, прил. Д).']
+   :['Нагрузки: полезная по СП 20.13330.2016 (табл. 8.3) с коэффициентом 1,3; собственный вес пирога с коэффициентом 1,15.','Балка — однопролётная шарнирная: M = qL²/8, Q = qL/2, прогиб f = 5qL⁴/384EI от нормативной нагрузки.','Расчётное сопротивление изгибу сосны: 14 / 13 / 8,5 МПа для 1/2/3 сорта, скалыванию 1,8 / 1,6 МПа, E = 10 000 МПа (СП 64.13330.2017).','Предельный прогиб принят L/250. Комфорт по «пружинистости» оцениваем отдельно по L/350.']};
+}
+
+/* ---------- построение интерфейса ---------- */
+const KEY='kalk-izhs-v1';let saved={};try{saved=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){}
+const store=()=>{try{localStorage.setItem(KEY,JSON.stringify(saved))}catch(e){}};
+$('#tabs').innerHTML=CALCS.map(c=>`<a class="tab" href="#${c.id}" id="tab-${c.id}">${c.tab}</a>`).join('');
+$('#main').innerHTML=CALCS.map(c=>{
+ let html='',open=false;
+ c.f.forEach(fd=>{
+  if(fd.g){if(open)html+='</div></fieldset>';html+=`<fieldset><legend>${fd.g}</legend><div class="grid2">`;open=true;return}
+  const id=`${c.id}-${fd.id}`,val=(saved[c.id]||{})[fd.id]??fd.d;
+  const ctl=fd.t==='sel'?`<select id="${id}" data-k="${fd.id}">${fd.o.map(([k,t])=>`<option value="${k}"${String(val)===k?' selected':''}>${t}</option>`).join('')}</select>`
+   :`<div class="inp"><input id="${id}" data-k="${fd.id}" type="number" inputmode="decimal" step="any" value="${val}"><span class="u">${fd.u||''}</span></div>`;
+  html+=`<div class="f${fd.w?' w':''}"><label for="${id}">${fd.l}</label>${ctl}${fd.h?`<p class="hint">${fd.h}</p>`:''}</div>`;
+ });
+ if(open)html+='</div></fieldset>';
+ return `<section class="calc" id="c-${c.id}" hidden><div><h2>${c.title}</h2><p class="sub">${c.sub}</p><form novalidate onsubmit="return false">${html}</form></div>
+ <div class="out" aria-live="polite"><div class="verdict" id="o-${c.id}-v"></div><div class="fig" id="o-${c.id}-fig"></div><div class="bars" id="o-${c.id}-bars"></div><table id="o-${c.id}-t"></table><ul class="notes" id="o-${c.id}-n"></ul>
+ <div class="cta"><p><b>Нужен проект по этому расчёту?</b> Инженер-конструктор посчитает дом целиком: фундамент, кровлю, перекрытия и узлы.</p><a href="${TG}" target="_blank" rel="noopener">Написать инженеру</a></div>
+ <details><summary>Как мы считаем</summary><ul id="o-${c.id}-how"></ul></details></div></section>`;
+}).join('');
+
+const figs={};
+function run(c){
+ const sec=$('#c-'+c.id),v={};let bad=false;
+ sec.querySelectorAll('[data-k]').forEach(el=>{v[el.dataset.k]=el.value;if(el.type==='number'&&(el.value===''||!(+el.value>=0)))bad=true});
+ saved[c.id]=v;store();
+ if(bad){$('#o-'+c.id+'-v').className='verdict v-warn';$('#o-'+c.id+'-v').innerHTML='<div class="ic">?</div><div><b>Заполните все поля</b><span>Нужны положительные числа.</span></div>';return}
+ let r;try{r=c.calc(v)}catch(e){console.log(e);return}
+ const ic={ok:'✓',warn:'!',bad:'×'}[r.vd];
+ $('#o-'+c.id+'-v').className='verdict v-'+r.vd;$('#o-'+c.id+'-v').innerHTML=`<div class="ic">${ic}</div><div><b>${r.head}</b><span>${r.msg}</span></div>`;
+ $('#o-'+c.id+'-bars').innerHTML=r.bars.map(([t,u,s])=>`<div class="bar"><div class="t"><span>${t}</span><b>${s}</b></div><div class="track"><i style="width:${Math.min(100,pct(u))}%;background:${barColor(u)}"></i></div></div>`).join('');
+ $('#o-'+c.id+'-t').innerHTML=r.rows.map(x=>x[0]==='h'?`<tr class="h"><td colspan="2">${x[1]}</td></tr>`:`<tr><td>${x[0]}</td><td>${x[1]}</td></tr>`).join('');
+ $('#o-'+c.id+'-n').innerHTML=r.notes.map(([k,s])=>`<li class="${k}">${s}</li>`).join('');
+ $('#o-'+c.id+'-how').innerHTML=r.how.map(s=>`<li>${s}</li>`).join('');
+ figs[c.id]=r.svg;draw(c.id);
+ const mini=$('#mini');mini.className='v-'+r.vd;mini.innerHTML=`<span>${ic} ${r.head}</span><span>К результату ↓</span>`;mini.onclick=()=>$('#o-'+c.id+'-v').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function draw(id){const el=$('#o-'+id+'-fig');if(!el||!figs[id]||!el.clientWidth)return;el.innerHTML=figs[id](el.clientWidth,el.clientHeight)}
+const ro=new ResizeObserver(es=>es.forEach(e=>draw(e.target.id.slice(2).replace('-fig',''))));
+CALCS.forEach(c=>{const sec=$('#c-'+c.id);sec.addEventListener('input',()=>run(c));sec.addEventListener('change',()=>run(c));ro.observe($('#o-'+c.id+'-fig'))});
+function route(){const id=(location.hash||'').slice(1);const c=CALCS.find(x=>x.id===id)||CALCS[0];
+ CALCS.forEach(x=>{$('#c-'+x.id).hidden=x!==c;$('#tab-'+x.id).toggleAttribute('aria-current',x===c);if(x===c)$('#tab-'+x.id).setAttribute('aria-current','page')});
+ run(c);document.title=`${c.title} — калькулятор | Карманный инженер ИЖС`;}
+window.addEventListener('hashchange',route);route();
+const io=new IntersectionObserver(es=>es.forEach(e=>$('#mini').classList.toggle('off',e.isIntersecting)));CALCS.forEach(c=>io.observe($('#o-'+c.id+'-v').parentElement));
+}
+</script>
+</body>
+</html>
